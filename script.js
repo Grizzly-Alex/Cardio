@@ -9,69 +9,72 @@ const inputTemp = document.querySelector('.form__input--temp');
 const inputClimb = document.querySelector('.form__input--climb');
 
 
-let map, mapEvent;
+class App {
 
+    #map;
+    #mapEvent;
 
-if (navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(
-        function(position){
-            const coords = [position.coords.latitude, position.coords.longitude];
+    constructor(){
+        this._getPosition();
+        form.addEventListener('submit', this._newWorkout.bind(this));       
+        inputType.addEventListener('change', this._toggleClimbField);
+    }
 
-            map = L.map('map').setView(coords, 13);
+    _getPosition() {
+        if (navigator.geolocation){
+            navigator.geolocation.getCurrentPosition(
+                this._loadMap.bind(this),
+                function(){
+                    alert('Невозможно получить ваше местоположение')
+                })
+        }
+    }
 
-            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
+    _loadMap(position) {                
+        const coords = [position.coords.latitude, position.coords.longitude];
 
-            // обработка клика на карте
-            map.on('click', function(event) {
-                mapEvent = event;
-                form.classList.remove('hidden');
-                inputDistance.focus();
-                /*
-                const {lat, lng} = mapEvent.latlng;
+        this.#map = L.map('map').setView(coords, 13);
 
-                L.marker([lat, lng]).addTo(map)
-                .bindPopup(L.popup({
-                    maxWidth: 200,
-                    minWidth: 100,
-                    autoClose: false,
-                    closeOnClick: false,
-                    className: 'running-popup',
-                }))
-                .setPopupContent('Тренировка')
-                .openPopup();
-                */
-            });    
-        }, 
-        function(){
-            alert('Невозможно получить ваше местоположение')
-        })
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+
+        }).addTo(this.#map);
+
+        // обработка клика на карте
+        this.#map.on('click', this._showForm.bind(this));    
+    }
+
+    _showForm(event) {
+        this.#mapEvent = event;
+            form.classList.remove('hidden');
+            inputDistance.focus();
+    }
+
+    _toggleClimbField() {
+        inputClimb.closest('.form__row').classList.toggle('form__row--hidden');
+        inputTemp.closest('.form__row').classList.toggle('form__row--hidden');
+    }
+
+    _newWorkout(event) {
+        event.preventDefault();
+            
+        //очистка полей ввода данных
+        inputDistance.value = inputDuration.value = inputTemp.value = inputClimb.value = '';
+            
+        //отображение маркера
+        const {lat, lng} = this.#mapEvent.latlng;
+    
+        L.marker([lat, lng]).addTo(this.#map)
+        .bindPopup(L.popup({
+            maxWidth: 200,
+            minWidth: 100,
+            autoClose: false,
+            closeOnClick: false,
+            className: 'running-popup',
+        }))
+        .setPopupContent('Тренировка')
+        .openPopup();}
 }
 
-form.addEventListener('submit', function(event) {
-    //очистка полей ввода данных
-    inputDistance.value = inputDuration.value = inputTemp.value = inputClimb.value = '';
+const app = new App();
 
-
-    //отображение маркера
-    event.preventDefault();
-    const {lat, lng} = mapEvent.latlng;
-
-    L.marker([lat, lng]).addTo(map)
-    .bindPopup(L.popup({
-        maxWidth: 200,
-        minWidth: 100,
-        autoClose: false,
-        closeOnClick: false,
-        className: 'running-popup',
-    }))
-    .setPopupContent('Тренировка')
-    .openPopup();
-});
-
-inputType.addEventListener('change', function() {
-    inputClimb.closest('.form__row').classList.toggle('form__row--hidden');
-    inputTemp.closest('.form__row').classList.toggle('form__row--hidden');
-
-})
