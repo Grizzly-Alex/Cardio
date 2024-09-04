@@ -8,6 +8,31 @@ const inputDuration = document.querySelector('.form__input--duration');
 const inputTemp = document.querySelector('.form__input--temp');
 const inputClimb = document.querySelector('.form__input--climb');
 
+class Workout {
+    constructor(distance, duration, coords){
+        this.id = (new Date() + '').slice(-10);
+        this.date = new Date();
+        this.distance = distance;
+        this.duration = duration;
+        this.coords = coords;
+    }
+}
+
+class Running extends Workout{
+    constructor(distance, duration, coords, temp){
+        super(this.distance, this.duration, this.coords);
+        this.temp = temp;
+    }
+}
+
+class Cycling extends Workout{
+    constructor(distance, duration, coords, climb){
+        super(this.distance, this.duration, this.coords);
+        this.climb = climb;
+    }
+}
+
+
 
 class App {
 
