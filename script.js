@@ -9,6 +9,8 @@ const inputTemp = document.querySelector('.form__input--temp');
 const inputClimb = document.querySelector('.form__input--climb');
 
 class Workout {
+    clickNumber = 0;
+
     constructor(distance, duration, coords){
         this.id = (Date.now() + '').slice(-10);
         this.date = new Date();
@@ -20,6 +22,10 @@ class Workout {
     _setDescription() {
         const formatedDate = new Intl.DateTimeFormat('ru-RU').format(this.date);
         this.type === 'running' ? this.description = `Пробежка ${formatedDate}` : this.description = `Велотренировка ${formatedDate}`;       
+    }
+
+    click(){
+        this.clickNumber++;
     }
 }
 
@@ -63,6 +69,7 @@ class App {
         this._getPosition();
         form.addEventListener('submit', this._newWorkout.bind(this));       
         inputType.addEventListener('change', this._toggleClimbField);
+        containerWorkouts.addEventListener('click', this._moveToWorkout.bind(this));
     }
 
     _getPosition() {
@@ -214,6 +221,22 @@ class App {
         }
 
         form.insertAdjacentHTML('afterend', html);
+    }
+
+    _moveToWorkout(e) {
+        const workoutElement = e.target.closest('.workout');
+
+        if(!workoutElement) return;
+        const workout = this.#workouts.find(item => item.id === workoutElement.dataset.id);
+
+        this.#map.setView(workout.coords, 13, {
+            animate: true,
+            pan: {
+                duration: 1,
+            }
+        });
+
+        workout.click();
     }
 }
 
